@@ -1,0 +1,33 @@
+# --- Loom ---
+hack/workspace
+!hack/workspace/loom.json
+
+# --- Java ---
+build
+target
+
+# --- Eclipse ---
+.project
+
+# --- IntelliJ ---
+.idea
+
+# --- OS Junk ---
+.directory
+.DS_Store
+
+# --- Gradle ---
+.gradle
+
+# --- Python ---
+*.pyc
+
+# --- Secrets ---
+*.key
+*.pem
+*.p12
+*.pkcs12
+*.jks
+*.jceks
+*.password
+*.passwd
