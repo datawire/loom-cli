@@ -5,7 +5,6 @@ import okhttp3.Request
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermission
 import java.security.MessageDigest
 

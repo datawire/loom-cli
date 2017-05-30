@@ -33,10 +33,12 @@ private fun processCommand(namespace: Namespace) {
   println("-- DEBUG => $namespace")
 
   when(namespace.getString("command")) {
-    "create-fabric"       -> createFabric(namespace)
-    "delete-fabric"       -> deleteFabric(namespace)
-    "get-cluster-kubecfg" -> getClusterKubeconfig(namespace)
-    "get-cluster-status"  -> getClusterStatus(namespace)
+    "create-fabric"          -> createFabric(namespace)
+    "delete-fabric"          -> deleteFabric(namespace)
+    "add-backing-service"    -> {}
+    "remove-backing-service" -> {}
+    "get-cluster-kubeconfig" -> getClusterKubeconfig(namespace)
+    "get-cluster-status"     -> getClusterStatus(namespace)
   }
 }
 
@@ -44,10 +46,12 @@ private fun getClusterKubeconfig(ns: Namespace) {
   val fabricName = ns.getString("name")
   val workspace  = ns.get<Workspace>("workspace")
 
-  workspace.getFabricSpec(fabricName)?.let { spec ->
+  val res = workspace.getFabricSpec(fabricName)?.let { spec ->
     val kops = Kops.newKops(workspace.path, workspace.config.stateStore)
     kops.exportClusterContext(spec.clusterDomain)?.let { kubeconfig -> println(kubeconfig) }
-  }
+  } ?: "Fabric not found: $fabricName"
+
+  println(res)
 }
 
 private fun getClusterStatus(ns: Namespace) {
