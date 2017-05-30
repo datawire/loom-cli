@@ -1,6 +1,10 @@
 package io.datawire.loomctl
 
 
+import io.datawire.loom.core.Json
+import io.datawire.loom.core.Yaml
+import io.datawire.loom.persistence.FilesystemDao
+import io.datawire.loom.terraform.Difference
 import net.sourceforge.argparse4j.inf.ArgumentParser
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
@@ -32,9 +36,42 @@ fun main(args: Array<String>) {
 private fun processCommand(namespace: Namespace) {
   println("-- DEBUG => $namespace")
 
+  val workspace = namespace.get<Workspace>("workspace")
+
+  val configDao = FilesystemDao(namespace.get<ConfigWorkspace>("config").path)
+  val fabricDao = FilesystemDao(workspace.path)
+
+  val loomRepo = LoomRepository(configDao, fabricDao, Json(), Yaml())
+
+  loomRepo.getBackingResourceModelByName("rds-postgresql-standalone-v1")
+
   when(namespace.getString("command")) {
+    "plan" -> {
+      val fabricName = namespace.getString("name")
+      val fabricWorkspace = FabricWorkspace(workspace.resolve("fabrics/$fabricName"))
+      val tf = Terraform.newTerraform(fabricWorkspace)
+      val plan = tf.plan()
+      println(plan)
+    }
+
+    "apply"                  -> {
+      val fabricName = namespace.getString("name")
+      val fabricWorkspace = FabricWorkspace(workspace.resolve("fabrics/$fabricName"))
+      val tf = Terraform.newTerraform(fabricWorkspace)
+      val plan = tf.plan()
+      when(plan) {
+        is Difference -> tf.apply(plan)
+        else          -> { println(plan) }
+      }
+    }
+
     "create-fabric"          -> createFabric(namespace)
     "delete-fabric"          -> deleteFabric(namespace)
+    "get-backing-service-model" -> {
+      val modelName = namespace.getString("name")
+      val msg = loomRepo.getBackingResourceModelByName(modelName) ?: "backing service model not found: $modelName"
+      println(msg)
+    }
     "add-backing-service"    -> {}
     "remove-backing-service" -> {}
     "get-cluster-kubeconfig" -> getClusterKubeconfig(namespace)
@@ -115,7 +152,7 @@ private fun cloneGit(repositoryUrl: String): Path {
   val name = repositoryUrl.substringAfter("/").substringBefore(".")
   val clonePath = Files.createTempDirectory("$name-")
 
-  println("Cloning repository (from: $repositoryUrl, into: {})")
+  println("Cloning repository (from: $repositoryUrl, into: $clonePath)")
   val clone = Git.cloneRepository()
       .setURI(repositoryUrl)
       .setDirectory(clonePath.toFile())
@@ -138,6 +175,14 @@ private fun createArgParser(workspace: Workspace, configWorkspace: ConfigWorkspa
 
   val commands = parser.addSubparsers().dest("command")
 
+  val applyCommand = commands.addParser("apply").apply {
+    addArgument("name")
+  }
+
+  val planCommand = commands.addParser("plan").apply {
+    addArgument("name")
+  }
+
   val deleteCommand = commands.addParser("delete-fabric").apply {
     addArgument("name")
   }
@@ -147,6 +192,10 @@ private fun createArgParser(workspace: Workspace, configWorkspace: ConfigWorkspa
 
     addArgument("--model")
     setDefault("model", workspace.config.defaults["fabricModel"])
+  }
+
+  val getBackingServiceModelInfo = commands.addParser("get-backing-service-model").apply {
+    addArgument("name")
   }
 
   val clusterStatus = commands.addParser("get-cluster-status").apply { addArgument("name") }

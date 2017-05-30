@@ -3,6 +3,7 @@ package io.datawire.loomctl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.codec.binary.Hex
+import org.zeroturnaround.zip.ZipUtil
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
@@ -18,7 +19,7 @@ data class Tool(
 
   fun download(outputRoot: Path) {
     val downloadTo = outputRoot.resolve(name)
-    if (!(Files.isExecutable(downloadTo) || checksumMatches(downloadTo))) {
+    if (!(Files.isExecutable(downloadTo) && checksumMatches(downloadTo))) {
       println("Downloading tool '$name' from '$url' into '$downloadTo'")
       val req = Request.Builder().url(url).build()
       val res = http.newCall(req).execute()
@@ -52,6 +53,11 @@ fun chmod(path: Path): Path {
   ))
 }
 
+fun unzip(path: Path): Path {
+  ZipUtil.unpack(path.toFile(), path.parent.toFile());
+  return path.parent.resolve("terraform")
+}
+
 fun downloadTools(toolPath: Path) {
   Files.createDirectories(toolPath)
 
@@ -68,6 +74,13 @@ fun downloadTools(toolPath: Path) {
           "https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl",
           "c488d77cd980ca7dae03bc684e19bd6a329962e32ed7a1bc9c4d560ed433399a",
           ::chmod
+      ),
+
+      Tool(
+          "terraform.zip",
+          "https://releases.hashicorp.com/terraform/0.9.6/terraform_0.9.6_linux_amd64.zip",
+          "7ec24a5d57da6ef7bdb5a3003791a4368489b32fa93be800655ccef0eceaf1ba",
+          { chmod(unzip(it)) }
       )
 
   ).forEach { it.download(toolPath) }

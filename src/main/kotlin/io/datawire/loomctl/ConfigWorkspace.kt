@@ -6,7 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 
-class ConfigWorkspace(private val path: Path) {
+class ConfigWorkspace(val path: Path) {
 
   fun isFabricModel(name: String): Boolean =
       Files.isRegularFile(path.resolve("loom/fabric-models/$name.yaml"))
