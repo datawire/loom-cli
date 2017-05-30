@@ -54,6 +54,9 @@ dependencies {
 
   compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.24'
 
+  compile 'com.squareup.okhttp3:okhttp:3.8.0'
+
+
   compile group: 'com.amazonaws', name: 'aws-java-sdk-core',     version: awsSdkVersion
   compile group: 'com.amazonaws', name: 'aws-java-sdk-s3',       version: awsSdkVersion
   compile group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: awsSdkVersion

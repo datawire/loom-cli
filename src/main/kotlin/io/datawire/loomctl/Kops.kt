@@ -22,12 +22,7 @@ class Kops(
 
     private val kopsExecutable = resolveExecutable(
         name = "kops",
-        searchPaths = setOf(
-            "/bin",
-            "/usr/local/bin",
-            "/usr/bin",
-            "${System.getProperty("user.home")}/bin"
-        ).map { Paths.get(it) }.toSet()
+        searchPaths = setOf("${System.getProperty("user.home")}/.loomctl/bin").map { Paths.get(it) }.toSet()
     )
 
     fun newKops(workspace: Path, stateStore: String) = Kops(kopsExecutable, workspace, stateStore)

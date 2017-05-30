@@ -7,13 +7,15 @@ import net.sourceforge.argparse4j.inf.Namespace
 import org.eclipse.jgit.api.Git
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-enum class Command {
-  DELETE_FABRIC
-}
+private val loomctlContentRoot   = Paths.get(System.getProperty("user.home"), ".loomctl")
+private val loomctlExternalTools = loomctlContentRoot.resolve("bin")
 
 fun main(args: Array<String>) {
+  downloadTools(loomctlExternalTools)
+
   getWorkspace()
       ?.let { ws ->
         val config = ConfigWorkspace(cloneGit(ws.config.configRepositoryUrl))

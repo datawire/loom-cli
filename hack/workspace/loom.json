@@ -1,0 +1,9 @@
+{
+  "configRepositoryUrl": "git@github.com:datawire/loom-config.git",
+
+  "stateStore": "s3://loom-state-914373874199",
+
+  "defaults": {
+    "fabricModel": "developer"
+  }
+}

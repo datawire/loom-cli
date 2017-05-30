@@ -1,5 +1,4 @@
 # --- Loom ---
-hack/workspace
 !hack/workspace/loom.json
 
 # --- Java ---
